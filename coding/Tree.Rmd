@@ -1,0 +1,229 @@
+---
+title: "DMProject"
+author: "Shengqi Zhou"
+date: "4/12/2020"
+output: word_document
+---
+
+##Classification Tree based on parking option ##
+
+```{r}
+house <- read.csv("/Users/zshengqi/Desktop/parkingoption.csv")
+house
+```
+
+```{r}
+house$beds <- as.factor(house$beds)
+house$baths <- as.factor(house$baths)
+house$cats_allowed <- as.factor(house$cats_allowed)
+house$dogs_allowed <- as.factor(house$dogs_allowed)
+house$smoking_allowed <- as.factor(house$smoking_allowed)
+house$wheelchair_access <- as.factor(house$wheelchair_access)
+house$electric_vehicle_charge <- as.factor(house$electric_vehicle_charge)
+house$comes_furnished <- as.factor(house$comes_furnished)
+house$parking_options <- as.factor(house$parking_options)
+```
+
+```{r}
+#install.packages("tree")
+library(tree)
+library(ISLR)
+library(MASS)
+```
+
+```{r}
+attach(house)
+summary(house)
+```
+
+```{r}
+High=ifelse(price<=1228,"No","Yes")
+house=data.frame(house, High)
+```
+
+```{r}
+#fit a classiciation tree to predict whether price is larger than mean = 1228
+tree.house=tree(High ~.-price, house)
+summary(tree.house)
+```
+
+```{r}
+#show branches of the tree
+plot(tree.house)
+text(tree.house,pretty=0)
+```
+
+```{r}
+tree.house #show details of each split
+```
+
+```{r}
+tree.house.new=tree(High~.-price, house, mincut=10) #change stopping criteria by increasing the minimum number of obs in each terminal node to 10 (default value is 5)
+summary(tree.house.new)
+```
+
+```{r}
+tree.house.new
+```
+
+```{r}
+#evalutaion out-of-sample performance
+set.seed(1)
+train=sample(1:nrow(house),116892) #training set
+house.test=house[-train,] #test set
+High.test=High[-train]
+tree.house = tree(High~.-price, house, subset=train) #fit a classification tree using training set
+tree.pred=predict(tree.house, house.test,type="class") #making predictions for test sets
+table(tree.pred, High.test) #show confusion matrix
+```
+
+```{r}
+accuracy=(66576 + 13652)/ 116892  #calculate accuracy
+accuracy
+```
+
+```{r}
+# Pruning a classification tree
+set.seed(1)
+cv.house = cv.tree(tree.house, FUN=prune.misclass) # using cv to select the best number of terminal nodes
+cv.house
+```
+
+```{r}
+par(mfrow=c(1,2))
+plot(cv.house$size, cv.house$dev, type="b")
+```
+
+```{r}
+prune.house=prune.misclass(tree.house, best=4) #prune the tree based on the optimal num of terminal node
+plot(prune.house)
+text(prune.house,pretty=0)
+```
+
+```{r}
+tree.pred2=predict(prune.house, house.test, type="class") #making predictions using the pruned tree
+table(tree.pred2, High.test) #show confusion matrix
+```
+
+```{r}
+acc= ( 66576 + 13652) / 116892
+acc
+```
+
+
+##Classification Tree based on laundry option ##
+
+```{r}
+house2 <- read.csv("/Users/zshengqi/Desktop/laundryoption.csv")
+house2
+```
+
+```{r}
+house2$beds <- as.factor(house2$beds)
+house2$baths <- as.factor(house2$baths)
+house2$cats_allowed <- as.factor(house2$cats_allowed)
+house2$dogs_allowed <- as.factor(house2$dogs_allowed)
+house2$smoking_allowed <- as.factor(house2$smoking_allowed)
+house2$wheelchair_access <- as.factor(house2$wheelchair_access)
+house2$electric_vehicle_charge <- as.factor(house2$electric_vehicle_charge)
+house2$comes_furnished <- as.factor(house2$comes_furnished)
+house2$laundry_options <- as.factor(house2$laundry_options)
+```
+
+```{r}
+attach(house2)
+summary(house2)
+```
+
+```{r}
+High=ifelse(price<=1228,"No","Yes")
+house2=data.frame(house2, High)
+```
+
+```{r}
+#fit a classiciation tree to predict whether price is larger than mean = 1228
+tree.house2=tree(High ~.-price, house2)
+summary(tree.house2)
+```
+
+```{r}
+#show branches of the tree
+plot(tree.house2)
+text(tree.house2,pretty=0)
+```
+
+```{r}
+tree.house2 #show details of each split
+```
+
+```{r}
+tree.house2.new=tree(High~.-price, house2, mincut=10) #change stopping criteria by increasing the minimum number of obs in each terminal node to 10 (default value is 5)
+summary(tree.house2.new)
+```
+
+```{r}
+tree.house2.new
+```
+
+```{r}
+#evalutaion out-of-sample performance
+set.seed(1)
+training=sample(1:nrow(house2),116892) #training set
+house2.test=house2[-training,] #test set
+High.test2=High[-training]
+tree.house2 = tree(High~.-price, house2, subset=training) #fit a classification tree using training set
+tree.pred3=predict(tree.house2, house2.test,type="class") #making predictions for test sets
+table(tree.pred3, High.test2) #show confusion matrix
+```
+
+```{r}
+accuracy= (60687 + 22777) /116892  #calculate accuracy
+accuracy
+```
+
+```{r}
+# Pruning a classification tree
+set.seed(1)
+cv.house2 = cv.tree(tree.house2, FUN=prune.misclass) # using cv to select the best number of terminal nodes
+cv.house2
+```
+
+```{r}
+par(mfrow=c(1,2))
+plot(cv.house2$size, cv.house2$dev, type="b")
+```
+
+```{r}
+prune.house2=prune.misclass(tree.house2, best=4) #prune the tree based on the optimal num of terminal node
+plot(prune.house2)
+text(prune.house2,pretty=0)
+```
+
+```{r}
+tree.pred4=predict(prune.house2, house2.test, type="class") #making predictions using the pruned tree
+table(tree.pred4, High.test) #show confusion matrix
+```
+
+```{r}
+acc = (60687 + 22777) /116892
+acc
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

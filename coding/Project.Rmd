@@ -1,0 +1,152 @@
+---
+title: "Porject"
+author: "Shengqi Zhou"
+date: "3/29/2020"
+output: word_document
+---
+
+```{r}
+# read data
+house <- read.csv("/Users/zshengqi/Desktop/housing.csv")
+```
+
+```{r}
+# as factor
+#house$comes_furnished <- as.factor(house$comes_furnished)
+head(house)
+```
+
+```{r}
+linear <- lm(price ~ sqfeet, data = house)
+summary(linear)
+```
+
+
+
+
+
+```{r}
+attach(house)
+plot(price)
+```
+
+```{r}
+# split data into training and test dataset
+library(dplyr)
+train = (house$id %% 2 == 0)
+house.test = house[!train,]
+dim(house.test)
+comes_furnished.test = comes_furnished[!train]
+comes_furnished.test
+```
+
+```{r}
+# perform logistic regression
+glm.fits = glm(comes_furnished ~ price + sqfeet + beds + baths, data = house,family=binomial, subset = train)
+summary(glm.fits)
+coef(glm.fits) 
+```
+
+```{r}
+glm.probs=predict(glm.fits, house.test, type="response")
+glm.probs[1:10]
+contrasts(comes_furnished)
+```
+
+```{r}
+glm.pred=rep(0,116948) 
+glm.pred[glm.probs >.5]= 1
+table(glm.pred, comes_furnished.test)
+mean(glm.pred == comes_furnished.test) # correct predictions
+mean(glm.pred != comes_furnished.test) # false predictions
+```
+
+```{r}
+# perform LQA
+library(MASS) 
+lda.fit = lda(comes_furnished ~ price + sqfeet + beds + baths, data = house, subset = train) 
+lda.fit 
+plot(lda.fit)
+```
+
+```{r}
+lda.class
+```
+
+```{r}
+house.test
+```
+
+
+```{r}
+lda.pred=predict(lda.fit, house.test)
+names(lda.pred)
+lda.class=lda.pred$class
+table(lda.class ,comes_furnished.test)
+mean(lda.class == comes_furnished.test) # correct predictions
+mean(lda.class != comes_furnished.test) # false predictions
+```
+
+```{r}
+# perform QDA
+qda.fit=qda(comes_furnished ~ price + sqfeet + beds + baths, data = house, subset = train) 
+qda.fit
+```
+
+```{r}
+qda.class=predict(qda.fit, house.test)$class 
+table(qda.class ,comes_furnished.test)
+mean(qda.class == comes_furnished.test) # correct predictions
+mean(qda.class != comes_furnished.test) # false predictions
+```
+
+```{r}
+# perform KNN
+library(class) 
+train.X=cbind(price, sqfeet, beds, baths)[train ,] 
+test.X=cbind(price, sqfeet, beds, baths)[!train ,] 
+train.comes_furnished =comes_furnished[train] 
+```
+
+```{r}
+set.seed(1) 
+knn.pred=knn(train.X,test.X,train.comes_furnished ,k=1) 
+table(knn.pred,comes_furnished.test)
+mean(knn.pred == comes_furnished.test) 
+```
+
+```{r}
+# perform SVM
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
